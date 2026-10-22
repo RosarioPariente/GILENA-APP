@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GilenaApp - Área de Deportes</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script defer src="js/api.js"></script>
+    <script defer src="js/auth.js"></script>
+    <script defer src="js/app.js"></script>
+</head>
+<body>
+
+    <!-- CABECERA FLOTANTE -->
+    <header class="header-flotante">
+        <div class="header-superior">
+            <div class="logo-contenedor">
+                <img src="assets/image/logogilena.png" alt="Logotipo de GilenaApp" class="logo-img" loading="lazy">
+            </div>
+            <div class="header-textos">
+                <h1>Polideportivo Municipal de Gilena</h1>
+                <p>Ayuntamiento de Gilena &bull; Área de Deportes</p>
+            </div>
+            
+            <div class="header-info-horario">
+                <span class="horario-titulo">Abierto todos los días</span>
+                <span class="horario-detalle">Lunes a viernes, de 09:00 a 22:00</span>
+            </div>
+
+            <div class="header-acciones">
+                <span id="menu-acceso-dinamico" class="usuario-logeado"></span>
+                <a href="login/login.html" class="btn-azul">Login</a>
+                <a href="register/registro.html" class="btn-azul">Registro</a>
+                <button id="btn-modo-oscuro" class="btn-oscuro" onclick="alternarModoOscuro()">🌙 Oscuro</button>
+            </div>
+        </div>
+
+        <!-- BARRA DE NAVEGACIÓN INSTITUCIONAL -->
+        <nav class="nav-principal">
+            <ul class="nav-lista">
+                <li><a href="index.html" class="activo">Inicio</a></li>
+                <li class="nav-dropdown">
+                    <a href="#contenedor-catalogo" class="dropdown-toggle">Instalaciones ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#seccion-formulario" onclick="irAReserva('Pabellón CUBIERTO')">Pabellón Cubierto</a></li>
+                        <li><a href="#seccion-formulario" onclick="irAReserva('Pista de Tenis 1')">Pista de Tenis 1</a></li>
+                        <li><a href="#seccion-formulario" onclick="irAReserva('Pista de Baloncesto')">Pista de Baloncesto</a></li>
+                        <li><a href="#seccion-formulario" onclick="irAReserva('Pista de Pádel 1')">Pista de Pádel 1</a></li>
+                        <li><a href="#seccion-formulario" onclick="irAReserva('Piscina Municipal')">Piscina Municipal</a></li>
+                    </ul>
+                </li>
+                <li><a href="#agenda-semanal">Horarios</a></li>
+                <li><a href="register/registro.html">Inscripción</a></li>
+                <li><a href="#faq-seccion">Preguntas frecuentes</a></li>
+                <li><a href="#donde-estamos">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="contenedor-principal">
+        <div class="banner">
+            Portal Oficial de Gestión y Reservas de Instalaciones Deportivas Municipales
+        </div>
+        
+        <!-- BLOQUE 3: BÚSQUEDA EN VIVO (Texto + Categoría combinados) -->
+        <section class="tarjeta">
+            <div class="grid-filtros">
+                <div class="grupo-control">
+                    <label for="input-busqueda-texto">Buscar Instalación:</label>
+                    <input type="text" id="input-busqueda-texto" placeholder="Nombre o descripción...">
+                </div>
+                <div class="grupo-control">
+                    <label for="filtro-deporte">Filtrar por Categoría:</label>
+                    <select id="filtro-deporte">
+                        <option value="todos">Todas las Instalaciones</option>
+                        <option value="aire libre">Aire Libre</option>
+                        <option value="cubierto">Cubierto</option>
+                    </select>
+                </div>
+            </div>
+            <p id="mensaje-sin-resultados" class="oculto mensaje-alerta">No se encontraron instalaciones con esos filtros.</p>
+        </section>
+
+        <!-- CATÁLOGO DINÁMICO -->
+        <div id="contenedor-catalogo" class="grid-catalogo"></div>
+
+        <!-- BLOQUE 2: AGENDA SEMANAL INTERACTIVA CON CSS GRID -->
+        <section class="tarjeta">
+            <div class="cabecera-agenda">
+                <div>
+                    <h2>Agenda Semanal Interactiva</h2>
+                    <p class="subtitulo" id="texto-semana">Cargando semana...</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="select-instalacion-agenda" class="select-agenda"></select>
+                    <button class="btn-oscuro" onclick="cambiarSemana(-1)">← Ant</button>
+                    <button class="btn-oscuro" onclick="cambiarSemana(1)">Sig →</button>
+                </div>
+            </div>
+            
+            <div class="scroll-horizontal">
+                <div id="agenda-semanal" class="grid-agenda-semanal"></div>
+            </div>
+        </section>
+
+        <!-- FORMULARIO REUTILIZADO -->
+        <section id="seccion-formulario" class="tarjeta tarjeta-formulario">
+            <h2>Formulario de Gestión y Reservas</h2>
+            <form id="form-reserva" onsubmit="enviarReservaFormulario(event)">
+                <div class="grupo-control">
+                    <label for="input-instalacion">Instalación seleccionada:</label>
+                    <input type="text" id="input-instalacion" value="Pabellón CUBIERTO" readonly class="input-readonly">
+                </div>
+                
+                <div class="grid-filtros" style="margin-bottom: 1rem;">
+                    <div class="grupo-control" style="margin-bottom: 0;">
+                        <label for="input-hora-inicio">Hora de Inicio:</label>
+                        <select id="input-hora-inicio" required>
+                            <option value="09:00">09:00 - 10:00 h</option>
+                            <option value="10:00">10:00 - 11:00 h</option>
+                            <option value="11:00">11:00 - 12:00 h</option>
+                            <option value="12:00">12:00 - 13:00 h</option>
+                            <option value="16:00">16:00 - 17:00 h</option>
+                            <option value="17:00">17:00 - 18:00 h</option>
+                            <option value="18:00">18:00 - 19:00 h</option>
+                            <option value="19:00">19:00 - 20:00 h</option>
+                            <option value="20:00">20:00 - 21:00 h</option>
+                            <option value="21:00">21:00 - 22:00 h</option>
+                        </select>
+                    </div>
+                    <div class="grupo-control" style="margin-bottom: 0;">
+                        <label for="input-fecha">Fecha de la reserva:</label>
+                        <input type="date" id="input-fecha" required>
+                    </div>
+                </div>
+
+                <div class="grupo-checkbox">
+                    <input type="checkbox" id="input-empadronado">
+                    <label for="input-empadronado">¿Estás empadronado en Gilena? (-20%)</label>
+                </div>
+                <div class="grupo-checkbox">
+                    <input type="checkbox" id="input-luz">
+                    <label for="input-luz">¿Necesitas luz suplementaria? (+2,50 €/h)</label>
+                </div>
+
+                <button type="submit" class="btn-primario">Confirmar Reserva</button>
+            </form>
+        </section>
+
+        <!-- SECCIÓN PREGUNTAS FRECUENTES (FAQ ACORDEÓN) -->
+        <section id="faq-seccion" class="tarjeta">
+            <h2 class="titulo-contacto">Preguntas frecuentes</h2>
+            <div class="faq-contenedor">
+                <div class="faq-item">
+                    <button class="faq-pregunta">
+                        <span class="faq-icono">+</span> ¿Necesito estar empadronado en Gilena para inscribirme?
+                    </button>
+                    <div class="faq-respuesta">
+                        <p>No es estrictamente obligatorio estar empadronado para hacer uso de las instalaciones, pero los vecinos empadronados disfrutan de bonificaciones y descuentos especiales (como el 20% de reducción en tarifas).</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-pregunta">
+                        <span class="faq-icono">+</span> ¿Cómo funciona el suplemento de luz en las pistas?
+                    </button>
+                    <div class="faq-respuesta">
+                        <p>Si vas a utilizar las instalaciones en horario nocturno o con baja visibilidad, puedes marcar la opción de luz suplementaria en el formulario. Tiene un coste adicional de 2,50 € por hora que se aplicará automáticamente a tu reserva.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-pregunta">
+                        <span class="faq-icono">+</span> ¿Cómo puedo pagar la reserva de una pista?
+                    </button>
+                    <div class="faq-respuesta">
+                        <p>El pago de las reservas se realiza de forma simulada en la plataforma o directamente mediante pasarela de pago integrada en las oficinas del polideportivo municipal.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-pregunta">
+                        <span class="faq-icono">+</span> ¿Qué pasa si llueve y tengo reservada la pista de tenis?
+                    </button>
+                    <div class="faq-respuesta">
+                        <p>En caso de condiciones meteorológicas adversas que impidan la práctica deportiva al aire libre, se podrá solicitar la cancelación o el cambio de hora de la reserva sin ningún tipo de penalización ni coste adicional.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-pregunta">
+                        <span class="faq-icono">+</span> ¿Hay descuentos para familias?
+                    </button>
+                    <div class="faq-respuesta">
+                        <p>Sí, existen bonos familiares y tarifas reducidas para familias numerosas o unidades familiares empadronadas en el municipio. Puedes consultar los requisitos en el Área de Deportes del Ayuntamiento.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DÓNDE ESTAMOS -->
+        <section id="donde-estamos" class="tarjeta seccion-contacto">
+            <h2 class="titulo-contacto">Dónde estamos</h2>
+            <div class="grid-contacto">
+                <div class="info-contacto">
+                    <div class="item-contacto">
+                        <strong>Dirección</strong>
+                        <p>Avenida de Andalucía, s/n · 41565 Gilena (Sevilla)</p>
+                    </div>
+                    <div class="item-contacto">
+                        <strong>Teléfono</strong>
+                        <p>955 000 101</p>
+                    </div>
+                    <div class="item-contacto">
+                        <strong>Correo electrónico</strong>
+                        <p><a href="mailto:deportes@gilena.es">deportes@gilena.es</a></p>
+                    </div>
+                    <div class="item-contacto">
+                        <strong>Atención al público</strong>
+                        <p>Lunes a viernes, de 9:00 a 14:00</p>
+                    </div>
+                </div>
+                <div class="mapa-contacto">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3166.529267156942!2d-4.9189!3d37.2345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDE0JzA0LjIiTiA0wrA1NScwOC4wIlc!5e0!3m2!1ses!2ses!4v1600000000000!5m2!1ses!2ses" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Ayuntamiento de Gilena &bull; Área de Deportes</p>
+    </footer>
+
+</body>
+</html>
